@@ -14,6 +14,29 @@ class PostController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+     /**
+     * @OA\Get(
+     *     path="/api/posts",
+     *     summary="Get all posts",
+     *     tags={"Posts"},
+     *     security={{ "bearerAuth":{} }},
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of posts",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="title", type="string", example="Judul Post"),
+     *                 @OA\Property(property="content", type="string", example="Isi post"),
+     *                 @OA\Property(property="status", type="integer", example=1)
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function index()
     {
         // ambil data terakhir post dari database melalui model Post
@@ -37,6 +60,52 @@ class PostController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     */
+
+    /**
+     * @OA\Post(
+     *     path="/api/posts",
+     *     summary="Buat Post baru",
+     *     description="Membuat postingan terbaru",
+     *     security={{"bearerAuth":{}}},
+     *     tags={"Posts"},
+     * 
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/x-www-form-urlencoded",
+     *             @OA\Schema(
+     *                 required={"title", "content", "status"},
+     *                 @OA\Property(property="title", type="string", example="Judul Post"),
+     *                 @OA\Property(property="content", type="string",  example="Content Post"),
+     *                 @OA\Property(property="status", type="integer",  example=1)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Post berhasil dibuat",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="title", type="string", example="Judul Post"),
+     *                 @OA\Property(property="content", type="string", example="Content Post"),
+     *                 @OA\Property(property="status", type="integer", example=1),
+     *             ),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="title", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="content", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="status", type="array", @OA\Items(type="integer"))
+     *         )
+     *     )
+     * )
      */
     public function store(Request $request)
     {
@@ -69,6 +138,37 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
+
+    /**
+     * @OA\Get(
+     *     path="/api/posts/{id}",
+     *     summary="Get single post",
+     *     tags={"Posts"},
+     *     security={{ "bearerAuth":{} }},
+     *
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID post",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Post detail",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="title", type="string", example="Judul Post"),
+     *             @OA\Property(property="content", type="string", example="Isi post"),
+     *             @OA\Property(property="slug", type="string", example="isi-post"),
+     *             @OA\Property(property="status", type="integer", example=1)
+     *         )
+     *     ),
+     * 
+     *     @OA\Response(response=404, description="Post not found")
+     * )
+     */
     public function show(Post $post)
     {
         return response()->json([
@@ -88,6 +188,69 @@ class PostController extends Controller
 
     /**
      * Update the specified resource in storage.
+     */
+
+    /**
+     * @OA\Put(
+     *     path="/api/posts/{id}",
+     *     summary="Perbarui Post baru",
+     *     description="Perbarui postingan terbaru",
+     *     security={{"bearerAuth":{}}},
+     *     tags={"Posts"},
+     * @OA\Parameter(
+    *         name="id",
+    *         in="path",
+    *         required=true,
+    *         description="ID of the post to update",
+    *         @OA\Schema(type="integer", example=1)
+    *     ),
+     * 
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/x-www-form-urlencoded",
+     *             @OA\Schema(
+     *                 required={"title", "content", "status"},
+     *                 @OA\Property(property="title", type="string", example="Judul Post"),
+     *                 @OA\Property(property="content", type="string",  example="Content Post"),
+     *                 @OA\Property(property="status", type="integer",  example=1)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Post berhasil diperbarui",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="title", type="string", example="Judul Post"),
+     *                 @OA\Property(property="content", type="string", example="Content Post"),
+     *                 @OA\Property(property="status", type="integer", example=1),
+     *             ),
+     *         )
+     *     ),
+     * 
+     * @OA\Response(
+ *         response=401,
+ *         description="Unauthorized - No valid Bearer token provided"
+ *     ),
+ * 
+     * @OA\Response(
+ *         response=404,
+ *         description="Post not found"
+ *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="title", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="content", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="status", type="array", @OA\Items(type="integer"))
+     *         )
+     *     )
+     * )
      */
     public function update(Request $request, Post $post)
     {
@@ -120,6 +283,33 @@ class PostController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     */
+
+    /**
+     * @OA\Delete(
+     *     path="/api/posts/{id}",
+     *     summary="Delete post",
+     *     tags={"Posts"},
+     *     security={{ "bearerAuth":{} }},
+     *
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID post",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Post deleted",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Post deleted successfully")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(response=404, description="Post not found")
+     * )
      */
     public function destroy(Post $post)
     {
