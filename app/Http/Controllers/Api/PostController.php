@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -114,6 +115,9 @@ class PostController extends Controller
             'content' => 'required',
             'status' => 'required',
         ]);
+
+        // $validator['author_id'] = Auth::user()->id;
+
         if($validator->fails()){
             return response()->json([
                 'data' => [],
@@ -121,7 +125,13 @@ class PostController extends Controller
                 'status' => false
             ]);
         }
+
+        $data = $validator->validated();
+
+        $data['author_id'] = Auth::id(); // tambahkan author_id ke data yang dikirim
+        
          $post = Post::create([
+            'author_id' => Auth::user()->id,
             'title' => $request->get('title'),
             'content' => $request->get('content'),
             'status' => $request->get('status'),
@@ -252,8 +262,18 @@ class PostController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, Post $post)
+    public function update(Request $request, $id)
     {
+        $post = Post::findOrFail($id);
+
+    // Pastikan hanya author asli yang dapat update
+    if ($post->author_id !== Auth::id()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Unauthorized: You are not the owner of this post.'
+        ], 403);
+    }
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'content' => 'required',
@@ -266,13 +286,15 @@ class PostController extends Controller
                 'status' => false
             ]);
         }
+        // Data yang divalidasi
+        $data = $validator->validated();
+        $data['author_id'] = $post->author_id;
+        
+         // Generate slug baru
+    $data['slug'] = Str::slug($data['title']);
 
-        $post->update([
-            'title' => $request->get('title'),
-            'content' => $request->get('content'),
-            'status' => $request->get('status'),
-            'slug' => Str::slug($request->get('title'))
-        ]);
+    // Update post
+    $post->update($data);
 
         return response()->json([
             'data' => new PostResource($post),
@@ -311,8 +333,11 @@ class PostController extends Controller
      *     @OA\Response(response=404, description="Post not found")
      * )
      */
-    public function destroy(Post $post)
+    public function destroy(Request $request, Post $post)
     {
+        if ($request->user()->id !== $post->author_id) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
         $post->delete();
 
         return response()->json([

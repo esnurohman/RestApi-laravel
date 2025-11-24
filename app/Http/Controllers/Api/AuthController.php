@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
  * @OA\Info(
  *     title="Laravel API Auth dan CRUD",
  *     version="1.0.0",
- *     description="API Documentation untuk Laravel Sanctum Authentication",
+ *     description="Belajar API Documentation Swagger dengan Framework Laravel Sanctum Authentication",
  *     @OA\Contact(
  *         email="es.nurohman.5@gmail.com"
  *     )
